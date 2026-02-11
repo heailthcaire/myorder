@@ -1,0 +1,866 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Bird Dog Pizza — MyOrder</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=DM+Sans:wght@400;500;700&display=swap');
+    :root{
+      --bg1:#fef9f0;
+      --bg2:#fdf2e9;
+      --card:#ffffff;
+      --text:#1a1207;
+      --muted:#7c6f5b;
+      --line:#e8dfd4;
+      --shadow:0 8px 30px rgba(26,18,7,.10);
+      --red:#c0392b;
+      --red2:#e74c3c;
+      --gold:#d4a017;
+      --gold2:#f0c040;
+      --cream:#fdf6ec;
+      --green:#27ae60;
+      --blue:#2563eb;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;color:var(--text);
+      background:
+        radial-gradient(800px 500px at 10% 0%,rgba(192,57,43,.12) 0%,transparent 60%),
+        radial-gradient(800px 500px at 90% 5%,rgba(212,160,23,.14) 0%,transparent 60%),
+        linear-gradient(180deg,var(--bg1),var(--bg2));
+      font-family:'DM Sans',system-ui,-apple-system,sans-serif;
+      min-height:100vh;
+    }
+    .wrap{max-width:1120px;margin:0 auto;padding:16px}
+
+    header{
+      display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;
+      padding:16px 20px;
+      border:1px solid var(--line);border-radius:18px;
+      background:rgba(255,255,255,.88);backdrop-filter:blur(10px);
+      box-shadow:var(--shadow);
+    }
+    .brand h1{
+      margin:0;font-size:22px;font-family:'Fredoka',sans-serif;font-weight:700;
+      color:var(--red);letter-spacing:.3px;
+    }
+    .brand h1 .gold{color:var(--gold)}
+    .brand p{margin:5px 0 0;color:var(--muted);font-size:12.5px;line-height:1.4}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 14px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);font-size:12px;background:rgba(253,246,236,.9);
+    }
+    .pill b{color:var(--text);font-weight:700}
+
+    main{display:grid;grid-template-columns:1.15fr .85fr;gap:14px;margin-top:14px}
+    @media(max-width:980px){main{grid-template-columns:1fr}}
+
+    .card{
+      border:1px solid var(--line);background:rgba(255,255,255,.92);
+      border-radius:18px;padding:16px;box-shadow:var(--shadow);
+    }
+    .card h2{margin:0 0 8px;font-size:14px;font-family:'Fredoka',sans-serif;font-weight:600;color:var(--red)}
+    .subtle{color:var(--muted);font-size:12px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+    @media(max-width:560px){.grid2,.grid3{grid-template-columns:1fr}}
+
+    label{display:block;font-size:11.5px;color:var(--muted);margin:0 0 5px;font-weight:500}
+    select,input[type="text"],textarea{
+      width:100%;padding:9px 10px;border-radius:10px;
+      border:1px solid var(--line);background:#fff;color:var(--text);
+      font-family:'DM Sans',sans-serif;font-size:13px;outline:none;
+    }
+    select:focus,input:focus,textarea:focus{
+      border-color:rgba(192,57,43,.45);box-shadow:0 0 0 3px rgba(192,57,43,.10);
+    }
+    textarea{min-height:70px;resize:vertical}
+    .group{margin:10px 0 0}
+
+    /* Tabs for menu categories */
+    .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 6px}
+    .tab{
+      padding:7px 13px;border:1px solid var(--line);border-radius:999px;
+      background:linear-gradient(180deg,#fff,#faf7f2);cursor:pointer;
+      font-size:12px;font-weight:600;color:var(--muted);
+      transition:all .15s;user-select:none;
+    }
+    .tab:hover{border-color:#ccc;transform:translateY(-1px)}
+    .tab[data-active="1"]{
+      border-color:rgba(192,57,43,.5);color:var(--red);
+      background:linear-gradient(180deg,rgba(192,57,43,.10),rgba(192,57,43,.04));
+      box-shadow:0 0 0 2px rgba(192,57,43,.08);
+    }
+    .tabPanel{display:none}
+    .tabPanel[data-visible="1"]{display:block}
+
+    /* Chips for toppings */
+    .choices{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px}
+    .chip{
+      user-select:none;display:inline-flex;align-items:center;gap:6px;
+      padding:7px 11px;border:1px solid var(--line);border-radius:999px;
+      background:linear-gradient(180deg,#fff,#faf7f2);cursor:pointer;
+      transition:all .1s;font-size:12px;color:var(--text);
+    }
+    .chip:hover{transform:translateY(-1px);border-color:#ccc}
+    .chip input{display:none}
+    .chip[data-on="1"]{
+      border-color:rgba(192,57,43,.55);
+      background:linear-gradient(180deg,rgba(192,57,43,.12),rgba(192,57,43,.05));
+      box-shadow:0 0 0 2px rgba(192,57,43,.08);font-weight:600;
+    }
+
+    /* Cart items */
+    .cartItem{
+      display:flex;justify-content:space-between;align-items:flex-start;gap:8px;
+      padding:10px;margin:6px 0;border:1px solid var(--line);border-radius:12px;
+      background:var(--cream);font-size:12.5px;
+    }
+    .cartItem .name{font-weight:700;font-size:13px}
+    .cartItem .details{color:var(--muted);margin-top:2px;font-size:11.5px}
+    .cartItem .price{font-weight:700;color:var(--red);white-space:nowrap}
+    .cartItem .removeBtn{
+      background:none;border:none;color:var(--red);cursor:pointer;
+      font-size:16px;padding:0 4px;line-height:1;font-weight:700;
+    }
+
+    .actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;margin-top:12px}
+    button{
+      border:1px solid var(--line);
+      background:linear-gradient(180deg,#fff,#faf7f2);
+      color:var(--text);padding:9px 14px;border-radius:12px;
+      cursor:pointer;font-weight:700;font-size:12.5px;
+      font-family:'DM Sans',sans-serif;letter-spacing:.1px;
+    }
+    button.primary{border-color:rgba(37,99,235,.3);background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.04))}
+    button.good{border-color:rgba(39,174,96,.4);background:linear-gradient(180deg,rgba(39,174,96,.14),rgba(39,174,96,.05));color:#1a7a42}
+    button.danger{border-color:rgba(192,57,43,.3);background:linear-gradient(180deg,rgba(192,57,43,.10),rgba(192,57,43,.04));color:var(--red)}
+    button.addBtn{
+      border-color:rgba(192,57,43,.45);
+      background:linear-gradient(180deg,var(--red),#a93226);
+      color:#fff;padding:10px 18px;border-radius:12px;
+    }
+    button:active{transform:translateY(1px)}
+
+    .preview{position:sticky;top:14px}
+    @media(max-width:980px){.preview{position:relative;top:auto}}
+
+    .receipt{border:1px dashed #c9bfb0;border-radius:16px;padding:14px;background:#fff}
+    .receipt .title{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+    .receipt h3{margin:0;font-size:15px;font-family:'Fredoka',sans-serif;color:var(--red)}
+    .receipt .meta{color:var(--muted);font-size:11.5px;margin-top:3px}
+    .line{height:1px;background:var(--line);margin:10px 0}
+    .kv{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;padding:2px 0}
+    .kv span{color:var(--muted);flex-shrink:0}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    .muted{color:var(--muted)}
+    .totalRow{font-size:15px;font-weight:700;color:var(--red)}
+
+    .barcodeBox{
+      margin-top:10px;padding:10px;border:1px solid var(--line);
+      border-radius:16px;background:linear-gradient(180deg,#fff,#faf7f2);text-align:center;
+    }
+    #barcode,#modalBarcode{max-width:100%;height:auto}
+
+    .emptyCart{text-align:center;padding:24px 10px;color:var(--muted);font-size:13px}
+    .emptyCart .icon{font-size:32px;margin-bottom:6px}
+
+    /* Modal */
+    .modalBackdrop{
+      position:fixed;inset:0;background:rgba(26,18,7,.5);
+      display:none;align-items:center;justify-content:center;padding:16px;z-index:100;
+    }
+    .modalBackdrop[data-open="1"]{display:flex}
+    .modal{
+      width:min(720px,100%);border-radius:20px;border:1px solid var(--line);
+      background:rgba(255,255,255,.97);box-shadow:0 30px 80px rgba(26,18,7,.25);
+      overflow:hidden;max-height:90vh;overflow-y:auto;
+    }
+    .modal header{
+      border:none;border-radius:0;
+      background:
+        radial-gradient(600px 200px at 15% 0%,rgba(192,57,43,.15) 0%,transparent 60%),
+        radial-gradient(600px 200px at 85% 0%,rgba(212,160,23,.12) 0%,transparent 60%),
+        rgba(253,246,236,.95);
+      box-shadow:inset 0 -1px 0 var(--line);
+    }
+    .modal .content{padding:14px}
+
+    @media print{
+      body{background:#fff;color:#000}
+      header,.card:not(.printable),.actions,.pill,.tabs,.tabPanel{display:none!important}
+      main{display:block}
+      .preview{position:static}
+      .card{border:none;box-shadow:none;background:#fff;padding:0}
+      .receipt{border:1px dashed #666;background:#fff}
+      .barcodeBox{border:1px solid #aaa;background:#fff}
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <h1>🍕 Bird Dog <span class="gold">Pizza</span> — MyOrder</h1>
+      <p>Build your order ahead, then show this screen to the cashier.<br/>Fewer mistakes · Faster pickup · Works on your phone</p>
+    </div>
+    <div class="pill"><span>Status:</span> <b id="statusText">Building</b></div>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>Build Your Order</h2>
+      <div class="subtle">Pick a category, customize, and tap <b>Add to Order</b>. Add multiple items.</div>
+
+      <div class="group grid2">
+        <div><label for="customerName">Name (optional)</label><input id="customerName" type="text" placeholder="e.g., Alex" maxlength="32"/></div>
+        <div><label for="storeNote">Pickup note (optional)</label><input id="storeNote" type="text" placeholder="e.g., Call when ready" maxlength="64"/></div>
+      </div>
+
+      <!-- Category Tabs -->
+      <div class="tabs" id="catTabs">
+        <div class="tab" data-cat="pizza" data-active="1">🍕 Pizza</div>
+        <div class="tab" data-cat="specialty">⭐ Specialty Pizza</div>
+        <div class="tab" data-cat="subs">🥖 Hot Subs</div>
+        <div class="tab" data-cat="appetizers">🧀 Appetizers</div>
+        <div class="tab" data-cat="salads">🥗 Salads</div>
+        <div class="tab" data-cat="calzone">🥟 Calzone/Stromboli</div>
+        <div class="tab" data-cat="pasta">🍝 Pasta</div>
+        <div class="tab" data-cat="pizzabowl">🥣 Pizza Bowl</div>
+        <div class="tab" data-cat="drinks">🥤 Drinks</div>
+        <div class="tab" data-cat="dessert">🍫 Dessert</div>
+      </div>
+
+      <!-- PIZZA PANEL -->
+      <div class="tabPanel" id="panel-pizza" data-visible="1">
+        <div class="group grid2">
+          <div>
+            <label for="pizzaSize">Crust / Size</label>
+            <select id="pizzaSize">
+              <option value="Personal 8|5.50">Personal 8" — $5.50</option>
+              <option value="Medium 12|10.15">Medium 12" — $10.15</option>
+              <option value="Large 14|12.50">Large 14" — $12.50</option>
+              <option value="Extra Large 16|16.25">Extra Large 16" — $16.25</option>
+              <option value="Cauliflower 10|14.15">Cauliflower Crust 10" — $14.15</option>
+              <option value="Gluten Free 10|14.15">Gluten Free 10" — $14.15</option>
+            </select>
+          </div>
+          <div>
+            <label for="pizzaSauce">Sauce</label>
+            <select id="pizzaSauce">
+              <option value="Marinara">Marinara (default)</option>
+              <option value="Ranch">Ranch</option>
+              <option value="BBQ">BBQ</option>
+              <option value="Garlic Butter">Garlic Butter</option>
+              <option value="No Sauce">No Sauce</option>
+            </select>
+          </div>
+        </div>
+        <div class="group">
+          <label>Toppings <span class="subtle">(tap to select)</span></label>
+          <div class="choices" id="toppingChoices"></div>
+        </div>
+        <div class="group">
+          <label for="pizzaSpecial">Special instructions</label>
+          <input id="pizzaSpecial" type="text" placeholder="e.g., well done, light sauce" maxlength="80"/>
+        </div>
+        <div class="actions"><button class="addBtn" onclick="addPizza()">+ Add Pizza to Order</button></div>
+      </div>
+
+      <!-- SPECIALTY PIZZA PANEL -->
+      <div class="tabPanel" id="panel-specialty">
+        <div class="group grid2">
+          <div>
+            <label for="specPizza">Specialty Pizza</label>
+            <select id="specPizza">
+              <option value="Guys Combo">Guys Combo — Pepperoni, ham, beef, sausages, peppers, onions, mushrooms, olives, Mozz</option>
+              <option value="Veggie">Veggie — Peppers, onions, mushrooms, olives, tomatoes, banana peppers, Feta, Mozz</option>
+              <option value="Cheeseburger">Cheeseburger — Beef, bacon, mustard/mayo sauce, Mozz, Cheddar, lettuce, tomatoes, pickles</option>
+              <option value="Hawaiian">Hawaiian — Ham, pineapple, bacon, green peppers, Mozz</option>
+              <option value="Meaty">Meaty — Pepperoni, ham, beef, pork sausage, Italian sausage, bacon, Mozz</option>
+              <option value="Taco">Taco — Seasoned beef, Mozz, Cheddar, lettuce, tomatoes, olives, salsa</option>
+              <option value="Bird Dog">Bird Dog — Cheddar, Mozz, bacon, fried chicken, honey mustard</option>
+              <option value="Chicken Bacon Ranch">Chicken Bacon Ranch — Chicken, bacon, mushrooms, peppers, Mozz, ranch</option>
+              <option value="Buffalo Chicken">Buffalo Chicken — Chicken, Mozz, Asiago, jalapeños, ranch sauce</option>
+              <option value="Jalapeño Popper">Jalapeño Popper — Ranch cream cheese, jalapeños, bacon, 3-cheese blend</option>
+              <option value="Pork BBQ Ranch">Pork BBQ Ranch — Smoked pork, BBQ ranch, Mozz, ranch drizzle</option>
+              <option value="Nashville Hot Chicken">Nashville Hot Chicken — Ranch cream cheese, 3-cheese, pickles, fried chicken, hot sauce</option>
+            </select>
+          </div>
+          <div>
+            <label for="specSize">Size</label>
+            <select id="specSize">
+              <option value="Personal 8|8.70">Personal 8" — $8.70</option>
+              <option value="Medium 12|14.90">Medium 12" — $14.90</option>
+              <option value="Large 14|18.30">Large 14" — $18.30</option>
+              <option value="Extra Large 16|23.60">Extra Large 16" — $23.60</option>
+              <option value="Cauliflower 10|14.55">Cauliflower Crust 10" — $14.55</option>
+              <option value="Gluten Free 10|14.55">Gluten Free 10" — $14.55</option>
+            </select>
+          </div>
+        </div>
+        <div class="group">
+          <label for="specWingSauce">Wing sauce level (Buffalo Chicken only)</label>
+          <select id="specWingSauce">
+            <option value="">N/A</option>
+            <option value="Mild">Mild</option>
+            <option value="Hot">Hot</option>
+            <option value="Torture">Torture 🔥</option>
+          </select>
+        </div>
+        <div class="group">
+          <label for="specSpecial">Special instructions</label>
+          <input id="specSpecial" type="text" placeholder="e.g., extra crispy, no onions" maxlength="80"/>
+        </div>
+        <div class="actions"><button class="addBtn" onclick="addSpecialty()">+ Add Specialty Pizza</button></div>
+      </div>
+
+      <!-- HOT SUBS PANEL -->
+      <div class="tabPanel" id="panel-subs">
+        <div class="group grid2">
+          <div>
+            <label for="subType">Sub</label>
+            <select id="subType">
+              <option value="Ham Sub|9.05">Ham Sub — Shaved ham, lettuce, tomato, Mozz, Italian dressing — $9.05</option>
+              <option value="Meatball Sub|9.05">Meatball Sub — Meatballs, marinara, Mozz — $9.05</option>
+              <option value="Veggie Sub|9.05">Veggie Sub — Peppers, onions, mushrooms, olives, Feta, Mozz — $9.05</option>
+              <option value="Italian Sub|9.05">Italian Sub — Ham, turkey, pepperoni, lettuce, tomato, Mozz — $9.05</option>
+              <option value="Turkey Sub|9.05">Turkey Sub — Turkey, lettuce, tomato, Mozz, Italian dressing — $9.05</option>
+            </select>
+          </div>
+          <div>
+            <label for="subSpecial">Special instructions</label>
+            <input id="subSpecial" type="text" placeholder="e.g., extra cheese" maxlength="80"/>
+          </div>
+        </div>
+        <div class="actions"><button class="addBtn" onclick="addSimpleItem('sub')">+ Add Sub</button></div>
+      </div>
+
+      <!-- APPETIZERS PANEL -->
+      <div class="tabPanel" id="panel-appetizers">
+        <div class="group">
+          <label for="appItem">Appetizer</label>
+          <select id="appItem">
+            <option value="Bread Sticks|4.75">Bread Sticks w/ marinara — $4.75</option>
+            <option value="Cheese Sticks|7.75">Cheese Sticks w/ marinara — $7.75</option>
+            <option value="Cheese Bread|6.25">Cheese Bread w/ marinara — $6.25</option>
+            <option value="Wings (10 jumbo)|15.00">Wings — 10 jumbo wings — $15.00</option>
+          </select>
+        </div>
+        <div class="group" id="wingsSauceGroup" style="display:none">
+          <label for="wingsSauce">Wing Sauce</label>
+          <select id="wingsSauce">
+            <option value="Mild">Mild</option>
+            <option value="Hot">Hot</option>
+            <option value="Torture">Torture 🔥</option>
+            <option value="BBQ">BBQ</option>
+            <option value="Plain">Plain</option>
+          </select>
+        </div>
+        <div class="actions"><button class="addBtn" onclick="addAppetizer()">+ Add Appetizer</button></div>
+      </div>
+
+      <!-- SALADS PANEL -->
+      <div class="tabPanel" id="panel-salads">
+        <div class="group grid2">
+          <div>
+            <label for="saladType">Salad</label>
+            <select id="saladType">
+              <option value="Garden Salad|5.05">Garden Salad — Lettuce, tomato, onions, peppers, Cheddar, olives, pepperoni — $5.05</option>
+              <option value="Chef Salad|9.30">Chef Salad — Lettuce, tomato, onions, peppers, olives, pepperoni, ham, Cheddar — $9.30</option>
+            </select>
+          </div>
+          <div>
+            <label for="saladDressing">Dressing</label>
+            <select id="saladDressing">
+              <option value="Italian">Italian</option>
+              <option value="Ranch">Ranch</option>
+              <option value="None">None</option>
+            </select>
+          </div>
+        </div>
+        <div class="actions"><button class="addBtn" onclick="addSalad()">+ Add Salad</button></div>
+      </div>
+
+      <!-- CALZONE/STROMBOLI PANEL -->
+      <div class="tabPanel" id="panel-calzone">
+        <div class="group grid2">
+          <div>
+            <label for="calzoneType">Type</label>
+            <select id="calzoneType">
+              <option value="Calzone|10.55">Calzone — Ricotta, Mozz + 1 topping, w/ marinara — $10.55</option>
+              <option value="Stromboli|10.55">Stromboli — Pizza sauce, Mozz + 1 topping, w/ marinara — $10.55</option>
+            </select>
+          </div>
+          <div>
+            <label for="calzoneTopping">Choose your topping</label>
+            <select id="calzoneTopping">
+              <option>Pepperoni</option><option>Ham</option><option>Beef</option>
+              <option>Pork Sausage</option><option>Italian Sausage</option><option>Bacon</option>
+              <option>Chicken</option><option>Mushrooms</option><option>Green Peppers</option>
+              <option>Onions</option><option>Black Olives</option><option>Jalapeños</option>
+            </select>
+          </div>
+        </div>
+        <div class="actions"><button class="addBtn" onclick="addCalzone()">+ Add to Order</button></div>
+      </div>
+
+      <!-- PASTA PANEL -->
+      <div class="tabPanel" id="panel-pasta">
+        <div class="group">
+          <label for="pastaItem">Pasta</label>
+          <select id="pastaItem">
+            <option value="Lasagna (w/ garlic bread)|9.25">Lasagna — Over a pound, w/ garlic bread — $9.25</option>
+          </select>
+        </div>
+        <div class="actions"><button class="addBtn" onclick="addSimpleItem('pasta')">+ Add Pasta</button></div>
+      </div>
+
+      <!-- PIZZA BOWL PANEL -->
+      <div class="tabPanel" id="panel-pizzabowl">
+        <div class="group">
+          <label for="bowlType">Pizza Bowl Style</label>
+          <select id="bowlType">
+            <option value="Custom (up to 4 toppings)">Custom — Choose up to 4 toppings</option>
+            <option value="Guys Combo">Guys Combo</option>
+            <option value="Veggie">Veggie</option>
+            <option value="Cheeseburger">Cheeseburger</option>
+            <option value="Hawaiian">Hawaiian</option>
+            <option value="Meaty">Meaty</option>
+            <option value="Taco">Taco</option>
+            <option value="Bird Dog">Bird Dog</option>
+            <option value="Chicken Bacon Ranch">Chicken Bacon Ranch</option>
+            <option value="Buffalo Chicken">Buffalo Chicken</option>
+            <option value="Nashville Hot Chicken">Nashville Hot Chicken</option>
+          </select>
+        </div>
+        <div class="group" id="bowlToppingsGroup">
+          <label>Toppings (up to 4)</label>
+          <div class="choices" id="bowlToppings"></div>
+        </div>
+        <div class="actions"><button class="addBtn" onclick="addBowl()">+ Add Pizza Bowl — $7.49</button></div>
+      </div>
+
+      <!-- DRINKS PANEL -->
+      <div class="tabPanel" id="panel-drinks">
+        <div class="group grid2">
+          <div>
+            <label for="drinkItem">Beverage</label>
+            <select id="drinkItem">
+              <option value="Pepsi|1.99">Pepsi — $1.99</option>
+              <option value="Diet Pepsi|1.99">Diet Pepsi — $1.99</option>
+              <option value="Mountain Dew|1.99">Mountain Dew — $1.99</option>
+              <option value="Dr Pepper|1.99">Dr Pepper — $1.99</option>
+              <option value="Starry|1.99">Starry — $1.99</option>
+              <option value="Lemonade|1.99">Lemonade — $1.99</option>
+              <option value="Tea|1.99">Tea — $1.99</option>
+              <option value="2-Liter/Gallon|2.00">2-Liter / Gallon — $2.00</option>
+            </select>
+          </div>
+          <div>
+            <label for="drinkQty">Qty</label>
+            <select id="drinkQty">
+              <option>1</option><option>2</option><option>3</option><option>4</option>
+            </select>
+          </div>
+        </div>
+        <div class="actions"><button class="addBtn" onclick="addDrink()">+ Add Drink</button></div>
+      </div>
+
+      <!-- DESSERT PANEL -->
+      <div class="tabPanel" id="panel-dessert">
+        <div class="group">
+          <label for="dessertItem">Dessert</label>
+          <select id="dessertItem">
+            <option value="Chocolate Chip Pizza|5.65">Chocolate Chip Pizza — $5.65</option>
+          </select>
+        </div>
+        <div class="actions"><button class="addBtn" onclick="addSimpleItem('dessert')">+ Add Dessert</button></div>
+      </div>
+
+      <!-- EXTRA SAUCE -->
+      <div class="group" style="margin-top:14px;padding-top:10px;border-top:1px solid var(--line)">
+        <div class="grid2">
+          <div>
+            <label for="extraSauce">Extra Sauce / Dressing ($0.55 each)</label>
+            <select id="extraSauce">
+              <option value="">None</option>
+              <option value="Marinara">Marinara</option>
+              <option value="Ranch">Ranch</option>
+              <option value="BBQ">BBQ</option>
+              <option value="Honey Mustard">Honey Mustard</option>
+              <option value="Hot Sauce">Hot Sauce</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:flex-end">
+            <button class="addBtn" style="width:100%;padding:9px" onclick="addExtraSauce()">+ Add Sauce</button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- RIGHT COLUMN: ORDER PREVIEW -->
+    <aside class="card preview printable">
+      <h2>🧾 Your Order</h2>
+      <div class="subtle">This is what you'll show the cashier. Tap <b>Place Order</b> for full-screen receipt.</div>
+
+      <div class="receipt" id="receiptPreview">
+        <div class="title">
+          <div>
+            <h3>🍕 Bird Dog Pizza</h3>
+            <div class="meta" id="previewMeta"></div>
+          </div>
+          <div class="mono muted" style="font-size:11px" id="previewOrderId"></div>
+        </div>
+        <div class="line"></div>
+        <div id="cartItems"></div>
+        <div class="line"></div>
+        <div class="kv totalRow"><span>Total</span><div id="cartTotal">$0.00</div></div>
+        <div class="kv"><span>Note</span><div id="previewNote" class="mono muted" style="font-size:11px">—</div></div>
+      </div>
+
+      <div class="barcodeBox">
+        <div class="subtle">Barcode encodes order summary for scanning.</div>
+        <svg id="barcode"></svg>
+      </div>
+
+      <div class="actions" style="justify-content:space-between;margin-top:10px">
+        <div style="display:flex;gap:8px">
+          <button class="danger" id="resetBtn">Clear All</button>
+          <button class="primary" id="saveBtn">Save</button>
+        </div>
+        <button class="good" id="orderBtn" style="font-size:14px;padding:10px 20px">Place Order</button>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<!-- MODAL -->
+<div class="modalBackdrop" id="modal">
+  <div class="modal" role="dialog" aria-modal="true">
+    <header>
+      <div class="brand">
+        <h1>🍕 Bird Dog Pizza — Show to Cashier</h1>
+        <p>Keep your screen brightness up for scanning.</p>
+      </div>
+      <div class="pill"><span>Order:</span> <b id="modalOrderId"></b></div>
+    </header>
+    <div class="content">
+      <div class="receipt" id="modalReceipt"></div>
+      <div class="barcodeBox">
+        <svg id="modalBarcode"></svg>
+        <div class="subtle" style="margin-top:6px">You can also <b>print</b> or <b>copy</b> the order text.</div>
+      </div>
+      <div class="actions" style="justify-content:space-between">
+        <button id="closeModalBtn">Back</button>
+        <div style="display:flex;gap:8px">
+          <button id="copyModalBtn">Copy</button>
+          <button class="primary" id="printModalBtn">Print</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const TOPPINGS = [
+  "Pepperoni","Ham","Beef","Pork Sausage","Italian Sausage","Bacon",
+  "Chicken","Mushrooms","Green Peppers","Onions","Black Olives",
+  "Tomatoes","Banana Peppers","Jalapeños","Pineapple",
+  "Mozzarella","Cheddar","Feta","Asiago","Pepperjack",
+  "Extra Cheese"
+];
+
+const $ = id => document.getElementById(id);
+const esc = s => (s??"").toString().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const fmt = n => "$" + n.toFixed(2);
+const nowLocal = () => new Date().toLocaleString([],{year:"numeric",month:"short",day:"2-digit",hour:"2-digit",minute:"2-digit"});
+
+let cart = [];
+let orderId = genOrderId();
+let createdAt = nowLocal();
+
+function genOrderId(){
+  const d=new Date(), y=d.getFullYear().toString().slice(2),
+    m=String(d.getMonth()+1).padStart(2,"0"),
+    day=String(d.getDate()).padStart(2,"0"),
+    r=Math.random().toString(36).slice(2,6).toUpperCase();
+  return `BD-${y}${m}${day}-${r}`;
+}
+
+function getChecked(id){
+  return [...document.querySelectorAll(`#${id} .chip[data-on="1"]`)].map(el=>el.dataset.value);
+}
+
+function renderChips(containerId, values){
+  const root=$(containerId); root.innerHTML="";
+  values.forEach(v=>{
+    const btn=document.createElement("button");
+    btn.type="button";btn.className="chip";btn.dataset.on="0";btn.dataset.value=v;
+    btn.innerHTML=`<span>${v}</span>`;
+    btn.addEventListener("click",()=>{btn.dataset.on=btn.dataset.on==="1"?"0":"1";});
+    root.appendChild(btn);
+  });
+}
+
+// Tab switching
+document.querySelectorAll(".tab").forEach(tab=>{
+  tab.addEventListener("click",()=>{
+    document.querySelectorAll(".tab").forEach(t=>t.dataset.active="0");
+    document.querySelectorAll(".tabPanel").forEach(p=>p.dataset.visible="0");
+    tab.dataset.active="1";
+    const panel=$("panel-"+tab.dataset.cat);
+    if(panel) panel.dataset.visible="1";
+  });
+});
+
+// Wings sauce toggle
+$("appItem").addEventListener("change",()=>{
+  $("wingsSauceGroup").style.display=$("appItem").value.startsWith("Wings")?"block":"none";
+});
+
+// Bowl toppings toggle
+$("bowlType").addEventListener("change",()=>{
+  $("bowlToppingsGroup").style.display=$("bowlType").value.includes("Custom")?"block":"none";
+});
+
+// ADD FUNCTIONS
+function addPizza(){
+  const [sizeLabel,price]=$("pizzaSize").value.split("|");
+  const sauce=$("pizzaSauce").value;
+  const toppings=getChecked("toppingChoices");
+  const special=$("pizzaSpecial").value.trim();
+  const details=[`Sauce: ${sauce}`];
+  if(toppings.length) details.push(toppings.join(", "));
+  if(special) details.push(special);
+  cart.push({name:`Build Your Own — ${sizeLabel}"`,price:parseFloat(price),details:details.join(" · "),cat:"Pizza"});
+  $("pizzaSpecial").value="";
+  document.querySelectorAll("#toppingChoices .chip").forEach(c=>c.dataset.on="0");
+  updateCart();
+}
+
+function addSpecialty(){
+  const name=$("specPizza").value;
+  const [sizeLabel,price]=$("specSize").value.split("|");
+  const wing=$("specWingSauce").value;
+  let details=`${sizeLabel}"`;
+  if(name==="Buffalo Chicken"&&wing) details+=` · ${wing} sauce`;
+  const special=$("specSpecial").value.trim();
+  if(special) details+=` · ${special}`;
+  cart.push({name:`${name}`,price:parseFloat(price),details,cat:"Specialty Pizza"});
+  $("specSpecial").value="";
+  updateCart();
+}
+
+function addSimpleItem(type){
+  let sel,specialEl;
+  if(type==="sub"){sel=$("subType");specialEl=$("subSpecial");}
+  else if(type==="pasta"){sel=$("pastaItem");specialEl=null;}
+  else if(type==="dessert"){sel=$("dessertItem");specialEl=null;}
+  const [name,price]=sel.value.split("|");
+  let details="";
+  if(specialEl){details=specialEl.value.trim();specialEl.value="";}
+  const cats={sub:"Hot Sub",pasta:"Pasta",dessert:"Dessert"};
+  cart.push({name,price:parseFloat(price),details,cat:cats[type]||type});
+  updateCart();
+}
+
+function addAppetizer(){
+  const [name,price]=$("appItem").value.split("|");
+  let details="";
+  if(name.startsWith("Wings")) details=$("wingsSauce").value+" sauce";
+  cart.push({name,price:parseFloat(price),details,cat:"Appetizer"});
+  updateCart();
+}
+
+function addSalad(){
+  const [name,price]=$("saladType").value.split("|");
+  const dressing=$("saladDressing").value;
+  cart.push({name,price:parseFloat(price),details:`Dressing: ${dressing}`,cat:"Salad"});
+  updateCart();
+}
+
+function addCalzone(){
+  const [name,price]=$("calzoneType").value.split("|");
+  const topping=$("calzoneTopping").value;
+  cart.push({name,price:parseFloat(price),details:`Topping: ${topping}`,cat:name});
+  updateCart();
+}
+
+function addBowl(){
+  const style=$("bowlType").value;
+  let details=style;
+  if(style.includes("Custom")){
+    const tops=getChecked("bowlToppings").slice(0,4);
+    details=tops.length?tops.join(", "):"Custom (no toppings selected)";
+    document.querySelectorAll("#bowlToppings .chip").forEach(c=>c.dataset.on="0");
+  }
+  cart.push({name:"Pizza Bowl",price:7.49,details,cat:"Pizza Bowl"});
+  updateCart();
+}
+
+function addDrink(){
+  const [name,price]=$("drinkItem").value.split("|");
+  const qty=parseInt($("drinkQty").value);
+  for(let i=0;i<qty;i++) cart.push({name,price:parseFloat(price),details:"",cat:"Drink"});
+  updateCart();
+}
+
+function addExtraSauce(){
+  const v=$("extraSauce").value;
+  if(!v) return;
+  cart.push({name:`Extra ${v}`,price:0.55,details:"",cat:"Extra"});
+  $("extraSauce").value="";
+  updateCart();
+}
+
+function removeItem(idx){
+  cart.splice(idx,1);
+  updateCart();
+}
+
+function updateCart(){
+  const total=cart.reduce((s,i)=>s+i.price,0);
+  const name=$("customerName").value.trim();
+  const note=$("storeNote").value.trim();
+
+  $("previewMeta").textContent=`Created ${createdAt}`;
+  $("previewOrderId").textContent=orderId;
+  $("previewNote").textContent=note||"—";
+
+  if(!cart.length){
+    $("cartItems").innerHTML=`<div class="emptyCart"><div class="icon">🛒</div>No items yet — pick from the menu!</div>`;
+  } else {
+    $("cartItems").innerHTML=cart.map((item,i)=>`
+      <div class="cartItem">
+        <div style="flex:1">
+          <div class="name">${esc(item.name)}</div>
+          ${item.details?`<div class="details">${esc(item.details)}</div>`:""}
+        </div>
+        <div class="price">${fmt(item.price)}</div>
+        <button class="removeBtn" onclick="removeItem(${i})" title="Remove">×</button>
+      </div>
+    `).join("");
+  }
+  $("cartTotal").textContent=fmt(total);
+
+  // Barcode
+  const compact=`${orderId}|${cart.length}items|${fmt(total)}`;
+  try{
+    JsBarcode($("#barcode"), compact, {format:"CODE128",lineColor:"#1a1207",background:"transparent",width:2,height:56,displayValue:true,fontSize:11,margin:0});
+  }catch(e){$("barcode").innerHTML="";}
+}
+
+function formatOrderText(){
+  const name=$("customerName").value.trim();
+  const note=$("storeNote").value.trim();
+  const total=cart.reduce((s,i)=>s+i.price,0);
+  let lines=[`Bird Dog Pizza — Order ${orderId}`];
+  if(name) lines.push(`Name: ${name}`);
+  lines.push(`Created: ${createdAt}`);
+  lines.push("---");
+  cart.forEach((item,i)=>{
+    lines.push(`${i+1}. ${item.name} — ${fmt(item.price)}`);
+    if(item.details) lines.push(`   ${item.details}`);
+  });
+  lines.push("---");
+  lines.push(`Total: ${fmt(total)}`);
+  if(note) lines.push(`Note: ${note}`);
+  return lines.join("\n");
+}
+
+function formatReceiptHTML(){
+  const name=$("customerName").value.trim();
+  const note=$("storeNote").value.trim();
+  const total=cart.reduce((s,i)=>s+i.price,0);
+  let itemsHTML=cart.map(item=>`
+    <div class="kv"><span>${esc(item.name)}</span><div class="mono">${fmt(item.price)}</div></div>
+    ${item.details?`<div style="font-size:11px;color:var(--muted);padding-left:4px;margin-bottom:4px">${esc(item.details)}</div>`:""}
+  `).join("");
+  return `
+    <div class="title">
+      <div><h3>🍕 Bird Dog Pizza</h3><div class="meta">Created ${esc(createdAt)}</div></div>
+      <div class="mono muted" style="font-size:11px">${esc(orderId)}</div>
+    </div>
+    <div class="line"></div>
+    <div class="kv"><span>Name</span><div class="mono">${name?esc(name):`<span class="muted">—</span>`}</div></div>
+    <div class="line"></div>
+    ${itemsHTML}
+    <div class="line"></div>
+    <div class="kv totalRow"><span>Total</span><div>${fmt(total)}</div></div>
+    <div class="kv"><span>Note</span><div class="mono muted">${esc(note||"—")}</div></div>
+  `;
+}
+
+function openModal(){
+  $("statusText").textContent="Ready";
+  $("modalOrderId").textContent=orderId;
+  $("modalReceipt").innerHTML=formatReceiptHTML();
+  const total=cart.reduce((s,i)=>s+i.price,0);
+  const compact=`${orderId}|${cart.length}items|${fmt(total)}`;
+  try{
+    JsBarcode($("modalBarcode"),compact,{format:"CODE128",lineColor:"#1a1207",background:"transparent",width:2,height:64,displayValue:true,fontSize:12,margin:0});
+  }catch(e){}
+  $("modal").dataset.open="1";
+}
+function closeModal(){$("modal").dataset.open="0";}
+
+async function copyText(text){
+  try{await navigator.clipboard.writeText(text);return true;}catch{
+    const ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();return true;
+  }
+}
+
+function resetAll(){
+  cart=[];orderId=genOrderId();createdAt=nowLocal();
+  $("customerName").value="";$("storeNote").value="";
+  $("statusText").textContent="Building";
+  updateCart();
+}
+
+function saveToLocal(){
+  const payload={savedAt:new Date().toISOString(),cart,orderId,createdAt,
+    name:$("customerName").value,note:$("storeNote").value};
+  localStorage.setItem("birddog:last",JSON.stringify(payload));
+}
+
+function loadFromLocal(){
+  try{
+    const raw=localStorage.getItem("birddog:last");
+    if(!raw) return;
+    const d=JSON.parse(raw);
+    cart=d.cart||[];orderId=d.orderId||genOrderId();createdAt=d.createdAt||nowLocal();
+    $("customerName").value=d.name||"";$("storeNote").value=d.note||"";
+    updateCart();
+  }catch{}
+}
+
+// INIT
+renderChips("toppingChoices",TOPPINGS);
+renderChips("bowlToppings",TOPPINGS);
+
+$("orderBtn").addEventListener("click",openModal);
+$("closeModalBtn").addEventListener("click",closeModal);
+$("modal").addEventListener("click",e=>{if(e.target===$("modal"))closeModal();});
+window.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
+$("copyModalBtn").addEventListener("click",async()=>{await copyText(formatOrderText());});
+$("printModalBtn").addEventListener("click",()=>window.print());
+$("resetBtn").addEventListener("click",resetAll);
+$("saveBtn").addEventListener("click",()=>{
+  saveToLocal();$("statusText").textContent="Saved";
+  setTimeout(()=>$("statusText").textContent="Building",1200);
+});
+
+// Update preview on name/note change
+["customerName","storeNote"].forEach(id=>$(id).addEventListener("input",updateCart));
+
+loadFromLocal();
+updateCart();
+</script>
+</body>
+</html>
